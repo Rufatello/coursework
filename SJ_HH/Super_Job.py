@@ -33,5 +33,5 @@ b = input('введите интерисующие Вас вакансию ')
 a = SuperJob(b)
 data, s = a.request_super_job()
 job_data = data
-a.load_json('Super_job.json', job_data)
-print(s) #
+a.load_json('SJ_HH\Super_job.json', job_data)
+print(s)
