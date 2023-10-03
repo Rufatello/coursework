@@ -2,6 +2,7 @@ import requests
 from datetime import datetime
 import json
 import os
+
 class Vakancy:
     def __init__(self, name, page, top_n):
         self.name = name
@@ -22,16 +23,16 @@ class HH(Vakancy):
 
     def load_vacancy(self):
         data = self.request_hh()
-        vacancies = []  # Список для хранения вакансий
+        vacancies = []
         for vacancy in data.get('items', []):
             published_at = datetime.strptime(vacancy['published_at'], "%Y-%m-%dT%H:%M:%S%z")
             vacancy_info = {
                 'id': vacancy['id'],
                 'name': vacancy['name'],
-                'salary_ot': vacancy['salary']['from'] if vacancy.get('salary') else None,
-                'salary_do': vacancy['salary']['to'] if vacancy.get('salary') else None,
+                'solary_ot': vacancy['salary']['from'] if vacancy.get('salary') else None,
+                'solary_do': vacancy['salary']['to'] if vacancy.get('salary') else None,
                 'responsibility': vacancy['snippet']['responsibility'],
-                'date': published_at.strftime("%d.%m.%Y")
+                'data': published_at.strftime("%d.%m.%Y")
             }
             vacancies.append(vacancy_info)
 
@@ -96,9 +97,9 @@ if platforma =='3':
             json.dump(combined_dict, file, ensure_ascii=False, indent=2)
 
         for platform, data in combined_dict.items():
-            print(f"Платформа: {platform}")
+            print(f"\n \033Платформа: {platform}")
             for item in data:
-                print(item)
+                print(f"id - {item['id']}\nДолжность - {item['name']}\nЗ.п от - {item['solary_ot']}\nЗ.п до - {item['solary_do']}\nОписание - {item['responsibility']}\nДата - {item['data']}\n")
 
         a = input('перейти на следующую страницу? y/n ')
         if a == 'y':
@@ -110,17 +111,14 @@ elif platforma =='1':
         hh_instance.page = page
         sj_instance.page = page
         hh_data = hh_instance.load_vacancy()
-        sj_data = sj_instance.load_vacancy()
 
         combined_dict['HH'] = hh_data
-        combined_dict['SJ'] = sj_data
 
         with open('Super_job.json', 'w', encoding='utf-8') as file:
             json.dump(combined_dict, file, ensure_ascii=False, indent=2)
 
         for platform in combined_dict['HH']:
-            print(f"{platform}")
-
+            print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['salary_ot']}\nЗ.п до - {platform['salary_do']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
         a = input('перейти на следующую страницу? y/n ')
         if a == 'y':
             page += 1
@@ -141,7 +139,7 @@ else:
             json.dump(combined_dict, file, ensure_ascii=False, indent=2)
 
         for platform in combined_dict['SJ']:
-            print(f"{platform}")
+            print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['solary_ot']}\nЗ.п до - {platform['solary_do']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
 
         a = input('перейти на следующую страницу? y/n ')
         if a == 'y':
