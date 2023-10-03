@@ -125,7 +125,7 @@ elif platforma =='1':
         else:
             break
 
-else:
+elif platforma =='2':
     while True:
         hh_instance.page = page
         sj_instance.page = page
