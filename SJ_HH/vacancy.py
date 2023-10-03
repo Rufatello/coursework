@@ -118,7 +118,7 @@ elif platforma =='1':
             json.dump(combined_dict, file, ensure_ascii=False, indent=2)
 
         for platform in combined_dict['HH']:
-            print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['salary_ot']}\nЗ.п до - {platform['salary_do']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
+            print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['solary_ot']}\nЗ.п до - {platform['solary_ot']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
         a = input('перейти на следующую страницу? y/n ')
         if a == 'y':
             page += 1
