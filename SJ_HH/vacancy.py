@@ -45,9 +45,7 @@ class Super_job(Vakancy):
     def request_hh(self):
         self.url = 'https://api.superjob.ru/2.0/vacancies/'
         headers = {
-                    'Host': 'api.superjob.ru',
                     'X-Api-App-Id': os.getenv('API_KEY_SJ'),
-                    'Authorization': 'Bearer r.000000010000001.example.access_token',
                 }
         data = requests.get(self.url, headers=headers,params={'keywords': self.name, 'page': self.page, 'count': self.top_n}).json()
         return data
