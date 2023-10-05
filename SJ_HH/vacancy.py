@@ -17,11 +17,13 @@ class HH(Vakancy):
         super().__init__(name, page, top_n)
 
     def request_hh(self):
+        """Выгрузка данных по 'HH' по запросам пользователя и возвращается словарь"""
         self.url = 'https://api.hh.ru'
         data = requests.get(f'{self.url}/vacancies', params={'text': self.name, 'page': self.page, 'per_page': self.top_n}).json()
         return data
 
     def load_vacancy(self):
+        """Проходим циклом по словарю берем из словаря только нужные нам данные и записываем их в переменную 'vacancies' """
         data = self.request_hh()
         vacancies = []
         for vacancy in data.get('items', []):
@@ -43,6 +45,7 @@ class Super_job(Vakancy):
         super().__init__(name, page, top_n)
 
     def request_hh(self):
+        """Выгрузка данных по 'Super_job' по запросам пользователя  по АПИ - ключу и возвращается словарь"""
         self.url = 'https://api.superjob.ru/2.0/vacancies/'
         headers = {
                     'X-Api-App-Id': os.getenv('API_KEY_SJ'),
@@ -51,6 +54,7 @@ class Super_job(Vakancy):
         return data
 
     def load_vacancy(self):
+        """Проходим циклом по словарю берем из словаря только нужные нам данные и записываем их в переменную 'vacancy_list_SJ' """
         data = self.request_hh()
         vacancy_list_SJ = []
         for i in data['objects']:
@@ -67,80 +71,86 @@ class Super_job(Vakancy):
             vacancy_list_SJ.append(super_job)
         return vacancy_list_SJ
 
+def job_vacancy():
+    """Основной код проекта, после внесения пользователем данных, данные сортируются согласно запросу пользователя и вносятся в json файл
+       далее выбирается площадка для поиска вакансий если пользователь хочет еще просмотреть вакансии нажимает 'y' и подгружаются новые вакансии
+       и перезаписывается файл json и так до бесконечности"""
+    name = input('Введите вакансию: ')
+    top_n = input('Введите кол-во вакансий: ')
+    page = int(input('Введите страницу: '))
+    hh_instance = HH(name, page, top_n)
+    sj_instance = Super_job(name, page, top_n)
+    combined_dict = {'HH': hh_instance.load_vacancy(), 'SJ': sj_instance.load_vacancy()}
 
 
-name = input('Введите вакансию: ')
-top_n = input('Введите кол-во вакансий: ')
-page = int(input('Введите страницу: '))
-hh_instance = HH(name, page, top_n)
-sj_instance = Super_job(name, page, top_n)
-combined_dict = {'HH': hh_instance.load_vacancy(), 'SJ': sj_instance.load_vacancy()}
-
-def load_json(combined_dict):
     with open('Super_job.json', 'w', encoding='utf-8') as file:
         json.dump(combined_dict, file, ensure_ascii=False, indent=2)
-load_json(combined_dict)
-platforma = input('введите платформу для поиска: (1 - HH, 2 - SJ, 3 - обе платформы)  ')
-if platforma =='3':
-    while True:
-        hh_instance.page = page
-        sj_instance.page = page
-        hh_data = hh_instance.load_vacancy()
-        sj_data = sj_instance.load_vacancy()
 
-        combined_dict['HH'] = hh_data
-        combined_dict['SJ'] = sj_data
 
-        with open('Super_job.json', 'w', encoding='utf-8') as file:
-            json.dump(combined_dict, file, ensure_ascii=False, indent=2)
+    platforma = input('введите платформу для поиска: (1 - HH, 2 - SJ, 3 - обе платформы)  ')
 
-        for platform, data in combined_dict.items():
-            print(f"\n \033Платформа: {platform}")
-            for item in data:
-                print(f"id - {item['id']}\nДолжность - {item['name']}\nЗ.п от - {item['solary_ot']}\nЗ.п до - {item['solary_do']}\nОписание - {item['responsibility']}\nДата - {item['data']}\n")
+    if platforma =='3':
+        while True:
+            hh_instance.page = page
+            sj_instance.page = page
+            hh_data = hh_instance.load_vacancy()
+            sj_data = sj_instance.load_vacancy()
 
-        a = input('перейти на следующую страницу? y/n ')
-        if a == 'y':
-            page += 1
-        else:
-            break
-elif platforma =='1':
-    while True:
-        hh_instance.page = page
-        sj_instance.page = page
-        hh_data = hh_instance.load_vacancy()
+            combined_dict['HH'] = hh_data
+            combined_dict['SJ'] = sj_data
 
-        combined_dict['HH'] = hh_data
+            with open('Super_job.json', 'w', encoding='utf-8') as file:
+                json.dump(combined_dict, file, ensure_ascii=False, indent=2)
 
-        with open('Super_job.json', 'w', encoding='utf-8') as file:
-            json.dump(combined_dict, file, ensure_ascii=False, indent=2)
+            for platform, data in combined_dict.items():
+                print(f"\n \033Платформа: {platform}")
+                for item in data:
+                    print(f"id - {item['id']}\nДолжность - {item['name']}\nЗ.п от - {item['solary_ot']}\nЗ.п до - {item['solary_do']}\nОписание - {item['responsibility']}\nДата - {item['data']}\n")
 
-        for platform in combined_dict['HH']:
-            print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['solary_ot']}\nЗ.п до - {platform['solary_ot']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
-        a = input('перейти на следующую страницу? y/n ')
-        if a == 'y':
-            page += 1
-        else:
-            break
+            a = input('перейти на следующую страницу? y/n ')
+            if a == 'y':
+                page += 1
+            else:
+                break
+    elif platforma =='1':
+        while True:
+            hh_instance.page = page
+            sj_instance.page = page
+            hh_data = hh_instance.load_vacancy()
 
-elif platforma =='2':
-    while True:
-        hh_instance.page = page
-        sj_instance.page = page
-        hh_data = hh_instance.load_vacancy()
-        sj_data = sj_instance.load_vacancy()
+            combined_dict['HH'] = hh_data
 
-        combined_dict['HH'] = hh_data
-        combined_dict['SJ'] = sj_data
+            with open('Super_job.json', 'w', encoding='utf-8') as file:
+                json.dump(combined_dict, file, ensure_ascii=False, indent=2)
 
-        with open('Super_job.json', 'w', encoding='utf-8') as file:
-            json.dump(combined_dict, file, ensure_ascii=False, indent=2)
+            for platform in combined_dict['HH']:
+                print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['solary_ot']}\nЗ.п до - {platform['solary_ot']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
+            a = input('перейти на следующую страницу? y/n ')
+            if a == 'y':
+                page += 1
+            else:
+                break
 
-        for platform in combined_dict['SJ']:
-            print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['solary_ot']}\nЗ.п до - {platform['solary_do']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
+    elif platforma =='2':
+        while True:
+            hh_instance.page = page
+            sj_instance.page = page
+            hh_data = hh_instance.load_vacancy()
+            sj_data = sj_instance.load_vacancy()
 
-        a = input('перейти на следующую страницу? y/n ')
-        if a == 'y':
-            page += 1
-        else:
-            break
+            combined_dict['HH'] = hh_data
+            combined_dict['SJ'] = sj_data
+
+            with open('Super_job.json', 'w', encoding='utf-8') as file:
+                json.dump(combined_dict, file, ensure_ascii=False, indent=2)
+
+            for platform in combined_dict['SJ']:
+                print(f"\nid - {platform['id']}\nДолжность - {platform['name']}\nЗ.п от - {platform['solary_ot']}\nЗ.п до - {platform['solary_do']}\nОписание - {platform['responsibility']}\nДата - {platform['data']}\n")
+
+            a = input('перейти на следующую страницу? y/n ')
+            if a == 'y':
+                page += 1
+            else:
+                break
+
+job_vacancy()
