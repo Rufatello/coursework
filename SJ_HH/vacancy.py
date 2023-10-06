@@ -2,7 +2,14 @@ import requests
 from datetime import datetime
 import json
 import os
+from abc import ABC, abstractmethod
 
+class APIManager(ABC):
+
+    @abstractmethod
+    def get_vacancies(self):
+        """получает вакансии по апи, возвращает список согластно запросу пользователя"""
+        pass
 class Vakancy:
     def __init__(self, name, page, top_n):
         self.name = name
@@ -12,19 +19,21 @@ class Vakancy:
     def __repr__(self):
         return f'{self.name}'
 
-class HH(Vakancy):
+class HH(Vakancy, APIManager):
     def __init__(self, name, page, top_n):
         super().__init__(name, page, top_n)
-
-    def request_hh(self):
-        """Выгрузка данных по 'HH' по запросам пользователя и возвращается словарь"""
         self.url = 'https://api.hh.ru'
+
+
+    def get_vacancies(self):
+        """Выгрузка данных по 'HH' по запросам пользователя и возвращается словарь"""
+
         data = requests.get(f'{self.url}/vacancies', params={'text': self.name, 'page': self.page, 'per_page': self.top_n}).json()
         return data
 
     def load_vacancy(self):
         """Проходим циклом по словарю берем из словаря только нужные нам данные и записываем их в переменную 'vacancies' """
-        data = self.request_hh()
+        data = self.get_vacancies()
         vacancies = []
         for vacancy in data.get('items', []):
             published_at = datetime.strptime(vacancy['published_at'], "%Y-%m-%dT%H:%M:%S%z")
@@ -40,13 +49,14 @@ class HH(Vakancy):
 
         return vacancies
 
-class Super_job(Vakancy):
+class Super_job(Vakancy, APIManager):
     def __init__(self, name, page, top_n):
         super().__init__(name, page, top_n)
-
-    def request_hh(self):
-        """Выгрузка данных по 'Super_job' по запросам пользователя  по АПИ - ключу и возвращается словарь"""
         self.url = 'https://api.superjob.ru/2.0/vacancies/'
+
+    def get_vacancies(self):
+        """Выгрузка данных по 'Super_job' по запросам пользователя  по АПИ - ключу и возвращается словарь"""
+
         headers = {
                     'X-Api-App-Id': os.getenv('API_KEY_SJ'),
                 }
@@ -55,7 +65,7 @@ class Super_job(Vakancy):
 
     def load_vacancy(self):
         """Проходим циклом по словарю берем из словаря только нужные нам данные и записываем их в переменную 'vacancy_list_SJ' """
-        data = self.request_hh()
+        data = self.get_vacancies()
         vacancy_list_SJ = []
         for i in data['objects']:
             published_at = datetime.fromtimestamp(i.get('date_published', ''))
